@@ -4,6 +4,7 @@ from user_agent import generate_user_agent
 from concurrent.futures import ThreadPoolExecutor
 import time
 import sys
+import os
 
 ## initializing
 
@@ -16,6 +17,11 @@ cl_cyan  = "\033[96m"
 cl_normal = "\033[0m"
 
 # utils functions
+def clear_s():
+	if "ix" in os.name:
+		os.system("clear")
+	else:
+		os.system("cls")
 def get_headers():
 	headers = {"User-Agent": generate_user_agent()}
 	return headers
@@ -24,12 +30,14 @@ def read_list(file):
 	return lines
 def now_time():
 	return time.strftime("%H:%M:%S")
-
+def banner():
+	clear_s()
+	print("kontolodon\n\n")
 # main functions
 def check_for_git(domain):
 	# domain format fixing
 	domain = domain[:-1] if domain.endswith("/") else domain
-	domain = domain.replace("https://").replace("http://") if domain.startswith("http") else domain
+	domain = domain.replace("https://","").replace("http://","") if domain.startswith("http") else domain
 
 	url = "/".join([domain,".git/"])
 	try:
@@ -50,7 +58,7 @@ def check_for_git(domain):
 
 		code = resp.status_code
 		if code == 200:
-			if "403" in resp.text:
+			if "403" in resp.text or "403" in title:
 				color = cl_yellow
 				code = 403
 			elif "Index Of" in resp.text:
@@ -77,6 +85,7 @@ def check_for_git(domain):
 
 
 def main():
+	banner()
 	try:
 		domain_list = read_list(input(f"[{now_time()}] {cl_green}[{cl_normal}!{cl_normal}{cl_green}]{cl_normal} Input domain list path: "))
 		domain_list_filtered = list(set(domain_list))
@@ -90,7 +99,7 @@ def main():
 	for domain in domain_list_filtered:
 		if not "panel" in domain:
 			try:
-				# check_for_git(domain)
+				#check_for_git(domain)
 				futures.append(threads.submit(check_for_git,domain))
 			except KeyboardInterrupt:
 				break
